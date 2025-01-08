@@ -2,10 +2,16 @@ from flask import Flask, request, jsonify
 from models.user import User
 from database import db
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+db_root_password = os.getenv("MYSQL_ROOT_PASSWORD")
+db_database_name = os.getenv("MYSQL_DATABASE")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "Your_secret_key"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://root:{db_root_password}@127.0.0.1:3306/{db_database_name}"
 
 login_manager = LoginManager()
 db.init_app(app)
@@ -21,7 +27,6 @@ def load_user(user_id):
 
 # Criar usuarios
 @app.route('/user', methods=['POST'])
-@login_required
 def create_user():
     data = request.get_json()
     username = data.get("username")
