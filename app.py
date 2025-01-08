@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from models.user import User
 from database import db
-from flask_login import LoginManager, login_user, current_user
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "Your_secret_key"
@@ -14,12 +14,28 @@ login_manager.init_app(app)
 # View de Login
 login_manager.login_view = "login"
 
+# Carrega o usuario
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
 
+# Criar usuarios
+@app.route('/user', methods=['POST'])
+@login_required
+def create_user():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
 
+    if username and password:
+        user = User(username=username, password=password)
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({"message": "Usuario criado com sucesso"}), 201
 
+    return jsonify({"message": "Dados invalidas"}), 400
+
+# Login dos usuarios
 @app.route('/login', methods=["POST"])
 def login():
     data = request.get_json()
@@ -32,15 +48,59 @@ def login():
 
         if user and user.password == password:
             login_user(user)
-            print(current_user.is_authenticated)
             return jsonify({"message": "Autentificacao realizada com sucesso"})
     
     return jsonify({"message": "Credenciais invalidas"}), 400
 
+# Logout dos usuarios
+@app.route('/logout', methods=['GET'])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({"messag": "Logout realizado com sucesso"})
 
-@app.route('/hello-world', methods=["GET"])
-def hello_world():
-    return "Hello World"
+# Pegar usuario por ID
+@app.route('/user/<int:id_user>', methods=['GET'])
+@login_required
+def read_user(id_user):
+    user = User.query.get(id_user)
+    
+    if user:
+        return jsonify({"message": "Usuario encontrado", "id": user.id, "username": user.username})
+
+    return jsonify({"message": "Usuario nao encontrado"}), 404
+
+# Update de senha do usuario
+@app.route('/user/<int:id_user>', methods=['PUT'])
+@login_required
+def update_user(id_user):
+    data = request.get_json()
+    user = User.query.get(id_user)
+
+    if user and data.get("password"):
+        user.password = data.get("password")
+        db.session.commit()
+
+        return jsonify({"message": "Usuario atualizado"})
+    
+    return jsonify({"message": "Usuario nao encontrado"}), 404
+
+# Deletar usuario
+@app.route('/user/<int:id_user>', methods=['DELETE'])
+@login_required
+def delete_user(id_user):
+    user = User.query.get(id_user)
+
+    if id_user == current_user.id:
+        return jsonify({"message": "Voce nao pode deletar sua propria conta"}), 403
+    
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+
+        return jsonify({"message": f"Usuario {user.username} deletado"})
+
+    return jsonify({"message": "Usuario nao encontrado"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
