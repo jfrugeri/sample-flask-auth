@@ -1,43 +1,88 @@
-# sample-flask-auth
- 
-## 1. Arquivos e diretórios necessários:
-- ### 1.1 Necessário ter o arquivo **.env** na raiz do projeto com as seguintes variáveis:
+# Sample Flask Auth
+
+Este projeto foi desenvolvido como uma aplicação prática para aprender a implementar autenticação de API utilizando Flask e um banco de dados MySQL.
+
+## 📂 Arquivos e Diretórios Necessários
+
+### 📄 1.1 Arquivo **.env**
+
+Crie um arquivo **.env** na raiz do projeto com as seguintes variáveis de ambiente:
+
 ```bash
 MYSQL_ROOT_PASSWORD=your_root_password
-MYSQL_DATABASE=yout_database_name
+MYSQL_DATABASE=your_database_name
 MYSQL_USER=your_user
 MYSQL_PASSWORD=your_password
 ```
-- ### 1.2 Crie um diretório vazio chamado **mysql** na raiz do projeto.
-> Neste diretório **mysql** será criado arquivos do banco de dados.
+
+### 📁 1.2 Diretório **mysql**
+
+Crie um diretório vazio chamado **mysql** na raiz do projeto.
+
+> Este diretório será utilizado para armazenar os arquivos do banco de dados.
+
 ---
-## 2. Instalação das dependências:
-Execute o comando abaixo para instalar as dependências do projeto:
-- Python Version: 3.12.8
+
+## 📦 Instalação das Dependências
+
+Certifique-se de que você está utilizando **Python 3.12.8**. Em seguida, execute o comando abaixo para instalar as dependências:
+
 ```bash
 pip install -r requirements.txt
 ```
+
 ---
-## 3. Criando o banco de dados:
-- ### 3.1 Abra o terminal onde esta o arquivo **docker-compose.yml** e execute o comando:
+
+## 🗄️ Criando o Banco de Dados
+
+### 🐳 3.1 Subindo o banco de dados com Docker
+
+No terminal, navegue até o diretório onde está o arquivo **docker-compose.yml** e execute o comando:
+
 ```bash
 docker-compose up
 ```
-> Esse comando irá subir o banco de dados. Na porta **3306**.
-- ### 3.2 Com o banco de dados rodando, abra o terminal no diretorio do projeto e execute o comando:
+
+> Isso iniciará o banco de dados na porta **3306**.
+
+### ⚙️ 3.2 Criando as tabelas no banco de dados
+
+Com o banco de dados rodando, abra o terminal no diretório do projeto e execute os seguintes comandos:
+
 ```bash
 flask shell
 db.create_all()
 db.session.commit()
 exit()
 ```
-> Esse comando acima irá criar a tabela no banco de dados.
----
-## 4. Rodando o projeto:
 
-- ### 4.1 Abra o terminal no diretorio do projeto e execute o comando:
+> Esses comandos irão criar as tabelas no banco de dados.
+
+---
+
+## 🚀 Rodando o Projeto
+
+### ▶️ 4.1 Iniciando o servidor Flask
+
+Abra o terminal no diretório do projeto e execute o comando:
 
 ```bash
 python app.py
 ```
-> O projeto irá rodar em -> http://localhost:5000
+
+> O projeto estará disponível em: [http://localhost:5000](http://localhost:5000)
+
+---
+
+## 📌 Resumo de Comandos
+
+| Comando                           | Descrição                          |
+| --------------------------------- | ---------------------------------- |
+| `pip install -r requirements.txt` | Instala as dependências do projeto |
+| `docker-compose up`               | Inicia o banco de dados via Docker |
+| `python app.py`                   | Inicia o servidor Flask            |
+
+---
+
+⚠️ **Certifique-se de que o Docker está instalado e rodando antes de executar o projeto.**
+
