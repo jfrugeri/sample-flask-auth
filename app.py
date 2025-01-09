@@ -3,6 +3,7 @@ from models.user import User
 from database import db
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 from dotenv import load_dotenv
+import bcrypt
 import os
 
 load_dotenv()
@@ -33,7 +34,8 @@ def create_user():
     password = data.get("password")
 
     if username and password:
-        user = User(username=username, password=password)
+        hashed_password = bcrypt.hashpw(str.encode(password), bcrypt.gensalt())
+        user = User(username=username, password=hashed_password, role="user")
         db.session.add(user)
         db.session.commit()
         return jsonify({"message": "Usuario criado com sucesso"}), 201
@@ -44,17 +46,16 @@ def create_user():
 @app.route('/login', methods=["POST"])
 def login():
     data = request.get_json()
-
     username = data.get("username")
     password = data.get("password")
 
     if username and password:
         user = User.query.filter_by(username=username).first()
 
-        if user and user.password == password:
+        if user and bcrypt.checkpw(str.encode(password), str.encode(user.password)):
             login_user(user)
             return jsonify({"message": "Autentificacao realizada com sucesso"})
-    
+
     return jsonify({"message": "Credenciais invalidas"}), 400
 
 # Logout dos usuarios
@@ -82,19 +83,27 @@ def update_user(id_user):
     data = request.get_json()
     user = User.query.get(id_user)
 
+    if id_user != current_user.id and current_user.role == "user":
+        return jsonify({"message": "Voce nao pode atualizar a senha de outro usuario"}), 403
+    
     if user and data.get("password"):
-        user.password = data.get("password")
+        
+        hashed_password = bcrypt.hashpw(str.encode(data.get("password")), bcrypt.gensalt())
+        user.password = hashed_password
         db.session.commit()
 
         return jsonify({"message": "Usuario atualizado"})
     
     return jsonify({"message": "Usuario nao encontrado"}), 404
 
-# Deletar usuario
+# Deletar usuarios
 @app.route('/user/<int:id_user>', methods=['DELETE'])
 @login_required
 def delete_user(id_user):
     user = User.query.get(id_user)
+
+    if current_user.role != "admin":
+        return jsonify({"message": "Voce nao tem permissao para deletar usuarios"}), 403
 
     if id_user == current_user.id:
         return jsonify({"message": "Voce nao pode deletar sua propria conta"}), 403
